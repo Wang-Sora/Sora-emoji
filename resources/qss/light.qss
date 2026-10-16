@@ -1,0 +1,456 @@
+/* ============================================================
+   Sora · 浅色主题
+   选择器结构与 dark.qss 一一对应，只换颜色。
+   ============================================================ */
+
+/* ---------- 全局 ---------- */
+QWidget {
+    color: #12161C;
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+    font-size: 13px;
+}
+
+QToolTip {
+    background-color: #FFFFFF;
+    color: #12161C;
+    border: 1px solid #E3E6EA;
+    padding: 4px 8px;
+}
+
+/* ---------- 窗口骨架 ---------- */
+QFrame#Root {
+    background-color: #F6F7F9;
+    border: 1px solid #E3E6EA;
+}
+
+QFrame#TitleBar {
+    background-color: #F6F7F9;
+    border-bottom: 1px solid #EBEEF1;
+}
+
+QLabel#AppMark {
+    background-color: #0FDC78;
+    border-radius: 4px;
+}
+
+QLabel#AppTitle {
+    color: #12161C;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* 窗口三键：常态即着色便于分辨，悬停提高饱和度 */
+QPushButton#WinDot {
+    border: none;
+    border-radius: 7px;
+    background-color: #D9DEE4;
+}
+
+QPushButton#WinDot[dot="min"]   { background-color: #D8B45E; }
+QPushButton#WinDot[dot="max"]   { background-color: #6FC191; }
+QPushButton#WinDot[dot="close"] { background-color: #DC8A8F; }
+
+QPushButton#WinDot[dot="min"]:hover   { background-color: #F0A800; }
+QPushButton#WinDot[dot="max"]:hover   { background-color: #10BE5E; }
+QPushButton#WinDot[dot="close"]:hover { background-color: #E93A42; }
+
+/* ---------- 左侧导航 ---------- */
+QFrame#SideBar {
+    background-color: #F6F7F9;
+    border-right: 1px solid #EBEEF1;
+}
+
+QToolButton#NavButton {
+    background-color: transparent;
+    border: none;
+    border-radius: 10px;
+}
+
+QToolButton#NavButton:hover {
+    background-color: rgba(15, 220, 120, 12%);
+}
+
+QToolButton#NavButton:checked {
+    background-color: rgba(15, 220, 120, 20%);
+}
+
+/* ---------- 页面容器 ---------- */
+QStackedWidget#Pages {
+    background-color: #F6F7F9;
+}
+
+QFrame#PageHeader {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #EBEEF1;
+}
+
+QLabel#SectionTitle {
+    color: #12161C;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+QLabel#Hint {
+    color: #6B7280;
+    font-size: 12px;
+}
+
+QFrame#ContextColumn {
+    background-color: #FFFFFF;
+    border-right: 1px solid #EBEEF1;
+}
+
+/* 音乐库与舞台之间的可拖动分隔条：平时和舞台同色（看不出有东西），
+   鼠标移上去才亮成一根强调色细条，提示这里可以拖 */
+QSplitter#LibrarySplitter {
+    background-color: #F6F7F9;
+}
+
+QSplitter#LibrarySplitter::handle {
+    background-color: transparent;
+    border-radius: 3px;
+}
+
+QSplitter#LibrarySplitter::handle:hover {
+    background-color: rgba(15, 220, 120, 40%);
+}
+
+QSplitter#LibrarySplitter::handle:pressed {
+    background-color: rgba(15, 220, 120, 70%);
+}
+
+QListWidget#TrackList,
+QListWidget#DocList {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+QListWidget#TrackList::item,
+QListWidget#DocList::item {
+    color: #3A424E;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin: 2px 0;
+}
+
+QListWidget#TrackList::item:hover,
+QListWidget#DocList::item:hover {
+    background-color: #F1F3F5;
+    color: #12161C;
+}
+
+QListWidget#TrackList::item:selected,
+QListWidget#DocList::item:selected {
+    background-color: rgba(15, 220, 120, 20%);
+    color: #0A9E56;
+}
+
+/* ---------- PDF 大纲 ---------- */
+QTreeView#OutlineTree {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    show-decoration-selected: 1;
+}
+
+QTreeView#OutlineTree::item {
+    color: #3A424E;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+
+QTreeView#OutlineTree::item:hover {
+    background-color: #F1F3F5;
+    color: #12161C;
+}
+
+QTreeView#OutlineTree::item:selected {
+    background-color: rgba(15, 220, 120, 20%);
+    color: #0A9E56;
+}
+
+/* ---------- 音乐页舞台 ---------- */
+QWidget#Stage {
+    background-color: #F6F7F9;
+}
+
+QLabel#CoverArt {
+    border-radius: 18px;
+}
+
+QLabel#SongTitle {
+    color: #12161C;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+QLabel#SongArtist {
+    color: #6B7280;
+    font-size: 13px;
+}
+
+QLabel#Lyrics {
+    color: #9AA3AF;
+    font-size: 13px;
+}
+
+QLabel#Lyrics[active="true"] {
+    color: #0FDC78;
+    font-weight: 600;
+}
+
+QScrollArea#LyricScroll {
+    background-color: transparent;
+    border: none;
+}
+
+QWidget#LyricsHost {
+    background-color: transparent;
+}
+
+/* ---------- 通用输入 ---------- */
+QLineEdit, QTextEdit, QComboBox {
+    background-color: #FFFFFF;
+    border: 1px solid #E3E6EA;
+    border-radius: 8px;
+    padding: 7px 10px;
+    selection-background-color: #0FDC78;
+    selection-color: #FFFFFF;
+}
+
+QLineEdit:focus, QTextEdit:focus, QComboBox:focus {
+    border: 1px solid #0FDC78;
+}
+
+QLineEdit:disabled, QTextEdit:disabled, QComboBox:disabled {
+    color: #9AA3AF;
+    background-color: #F1F3F5;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 22px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #FFFFFF;
+    border: 1px solid #E3E6EA;
+    selection-background-color: rgba(15, 220, 120, 20%);
+    selection-color: #0A9E56;
+    outline: none;
+}
+
+/* ---------- 按钮 ---------- */
+QToolButton#Primary {
+    background-color: #0FDC78;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 9px;
+    padding: 0 14px;
+    font-weight: 600;
+}
+
+QToolButton#Primary:hover   { background-color: #22E787; }
+QToolButton#Primary:pressed { background-color: #0CC46A; }
+QToolButton#Primary:disabled {
+    background-color: #DCEFE4;
+    color: #9AB8A8;
+}
+
+QToolButton#Ghost {
+    background-color: transparent;
+    color: #3A424E;
+    border: 1px solid #E3E6EA;
+    border-radius: 9px;
+    padding: 0 10px;
+}
+
+QToolButton#Ghost:hover {
+    background-color: #F1F3F5;
+    border-color: #D5DAE0;
+    color: #12161C;
+}
+
+QToolButton#Ghost:pressed {
+    background-color: #E9ECEF;
+}
+
+/* ---------- 卡片 ---------- */
+QFrame#Card {
+    background-color: #FFFFFF;
+    border: 1px solid #EBEEF1;
+    border-radius: 14px;
+}
+
+QLabel#CardTitle {
+    color: #12161C;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+QLabel#FieldLabel {
+    color: #6B7280;
+    font-size: 12px;
+}
+
+/* ---------- PDF 页 ---------- */
+QFrame#PdfToolbar {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #EBEEF1;
+}
+
+QPdfView#PdfView {
+    background-color: #E9ECEF;
+    border: none;
+}
+
+/* ---------- AI 页 ---------- */
+QScrollArea#ChatScroll {
+    background-color: #F6F7F9;
+    border: none;
+}
+
+QWidget#ChatContainer {
+    background-color: #F6F7F9;
+}
+
+QLabel#BubbleUser {
+    background-color: #0FDC78;
+    color: #FFFFFF;
+    border-radius: 12px;
+    padding: 9px 13px;
+}
+
+QLabel#BubbleAi {
+    background-color: #FFFFFF;
+    color: #12161C;
+    border: 1px solid #E3E6EA;
+    border-radius: 12px;
+    padding: 9px 13px;
+}
+
+QFrame#Composer {
+    background-color: #FFFFFF;
+    border-top: 1px solid #EBEEF1;
+}
+
+/* ---------- 底部播放条 ---------- */
+QFrame#PlayerBar {
+    background-color: #FFFFFF;
+    border-top: 1px solid #EBEEF1;
+}
+
+QLabel#CoverThumb {
+    border-radius: 8px;
+}
+
+QLabel#TrackTitle {
+    color: #12161C;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QLabel#TrackArtist {
+    color: #6B7280;
+    font-size: 11px;
+}
+
+QLabel#TimeLabel {
+    color: #6B7280;
+    font-size: 11px;
+}
+
+QToolButton#Transport {
+    background-color: transparent;
+    border: none;
+    border-radius: 16px;
+}
+
+QToolButton#Transport:hover {
+    background-color: #F1F3F5;
+}
+
+QToolButton#TransportPrimary {
+    background-color: #0FDC78;
+    border: none;
+    border-radius: 19px;
+}
+
+QToolButton#TransportPrimary:hover   { background-color: #22E787; }
+QToolButton#TransportPrimary:pressed { background-color: #0CC46A; }
+
+/* ---------- 滑块 ---------- */
+QSlider::groove:horizontal {
+    height: 4px;
+    background-color: #DDE2E8;
+    border-radius: 2px;
+}
+
+QSlider::sub-page:horizontal {
+    background-color: #0FDC78;
+    border-radius: 2px;
+}
+
+QSlider::handle:horizontal {
+    width: 12px;
+    height: 12px;
+    margin: -4px 0;
+    border-radius: 6px;
+    background-color: #FFFFFF;
+    border: 1px solid #C9D0D8;
+}
+
+QSlider::handle:horizontal:hover {
+    background-color: #FFFFFF;
+    border-color: #0FDC78;
+}
+
+QSlider#VolumeSlider::sub-page:horizontal {
+    background-color: #9AA3AF;
+}
+
+/* ---------- 滚动条 ---------- */
+QScrollBar:vertical {
+    background: transparent;
+    width: 10px;
+    margin: 2px;
+}
+
+QScrollBar::handle:vertical {
+    background: #D2D8DE;
+    border-radius: 5px;
+    min-height: 28px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #BFC6CE;
+}
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 10px;
+    margin: 2px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #D2D8DE;
+    border-radius: 5px;
+    min-width: 28px;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    height: 0;
+    width: 0;
+}
+
+QScrollBar::add-page, QScrollBar::sub-page {
+    background: transparent;
+}
+
+/* ---------- 右下角缩放柄 ---------- */
+QSizeGrip#Grip {
+    background: transparent;
+    width: 16px;
+    height: 16px;
+}
