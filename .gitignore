@@ -75,6 +75,7 @@ CMakeLists.txt.user*
 *.exe
 
 # Directories with generated files
+/dist/
 .moc/
 .obj/
 .pch/
