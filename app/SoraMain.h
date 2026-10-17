@@ -16,7 +16,7 @@ class QStackedWidget;
 /**
  * 主窗口：无边框 + 自定义标题栏，负责把导航栏、页面栈、播放条装配到一起。
  *
- * 页面顺序：0 音乐 / 1 PDF / 2 AI / 3 设置。
+ * 页面顺序：0 音乐 / 1 PDF / 2 AI / 3 表情库 / 4 设置。
  */
 class SoraMain : public QMainWindow
 {

@@ -6,6 +6,7 @@
 #include "pages/MusicPage.h"
 #include "pages/PdfPage.h"
 #include "pages/SettingsPage.h"
+#include "pages/StickersPage.h"
 #include "widgets/PlayerBar.h"
 #include "widgets/SideBar.h"
 #include "widgets/TitleBar.h"
@@ -74,7 +75,8 @@ void SoraMain::buildUi()
     m_stack->addWidget(new MusicPage(m_audio, m_stack));       // 0
     m_stack->addWidget(new PdfPage(m_stack));                  // 1
     m_stack->addWidget(new AiPage(m_ai, m_stack));             // 2
-    m_stack->addWidget(new SettingsPage(m_ai, m_stack));       // 3
+    m_stack->addWidget(new StickersPage(m_stack));             // 3
+    m_stack->addWidget(new SettingsPage(m_ai, m_stack));       // 4
     m_stack->setCurrentIndex(0);
 
     middleLayout->addWidget(m_stack, 1);
@@ -161,7 +163,7 @@ void SoraMain::keyPressEvent(QKeyEvent *event)
     }
 
     if (event->modifiers() == Qt::ControlModifier && event->key() >= Qt::Key_1
-        && event->key() <= Qt::Key_4) {
+        && event->key() <= Qt::Key_5) {
         setPage(event->key() - Qt::Key_1);
         event->accept();
         return;

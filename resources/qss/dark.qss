@@ -278,6 +278,37 @@ QToolButton#Ghost:pressed {
     background-color: #101419;
 }
 
+/* 可勾选的 Ghost 按钮（表情库监听开关）：勾中后用强调色描边代替实心填充 */
+QToolButton#Ghost:checked {
+    border-color: #32F08C;
+    color: #32F08C;
+}
+
+/* ---------- 右键菜单 ---------- */
+QMenu {
+    background-color: #14181E;
+    color: #E7EBF0;
+    border: 1px solid #1F252E;
+    border-radius: 8px;
+    padding: 6px 4px;
+}
+
+QMenu::item {
+    padding: 6px 18px;
+    border-radius: 6px;
+}
+
+QMenu::item:selected {
+    background-color: rgba(50, 240, 140, 18%);
+    color: #32F08C;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #1F252E;
+    margin: 4px 8px;
+}
+
 /* ---------- 卡片 ---------- */
 QFrame#Card {
     background-color: #0E1116;
@@ -335,6 +366,32 @@ QLabel#BubbleAi {
 QFrame#Composer {
     background-color: #0E1116;
     border-top: 1px solid #171C23;
+}
+
+/* ---------- 表情库 ---------- */
+QListWidget#StickerGrid {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+QListWidget#StickerGrid::item {
+    background-color: #14181E;
+    border: 1px solid #1F252E;
+    border-radius: 10px;
+    color: #8A93A0;
+    font-size: 11px;
+}
+
+QListWidget#StickerGrid::item:hover {
+    border: 1px solid #32F08C;
+    color: #E7EBF0;
+}
+
+QListWidget#StickerGrid::item:selected {
+    background-color: rgba(50, 240, 140, 12%);
+    border: 1px solid #32F08C;
+    color: #32F08C;
 }
 
 /* ---------- 底部播放条 ---------- */

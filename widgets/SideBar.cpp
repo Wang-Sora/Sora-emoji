@@ -24,6 +24,7 @@ SideBar::SideBar(QWidget *parent)
     addButton(QStringLiteral(":/icons/music.svg"), QStringLiteral("音乐"));
     addButton(QStringLiteral(":/icons/pdf.svg"), QStringLiteral("PDF 阅读"));
     addButton(QStringLiteral(":/icons/ai.svg"), QStringLiteral("AI 助手"));
+    addButton(QStringLiteral(":/icons/sticker.svg"), QStringLiteral("表情库"));
     addButton(QStringLiteral(":/icons/settings.svg"), QStringLiteral("设置"));
 
     layout->addStretch(1);

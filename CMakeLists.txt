@@ -43,6 +43,8 @@ set(SORA_SOURCES
     core/PdfController.cpp
     core/AiClient.h
     core/AiClient.cpp
+    core/StickerStore.h
+    core/StickerStore.cpp
 
     widgets/TitleBar.h
     widgets/TitleBar.cpp
@@ -57,6 +59,8 @@ set(SORA_SOURCES
     pages/PdfPage.cpp
     pages/AiPage.h
     pages/AiPage.cpp
+    pages/StickersPage.h
+    pages/StickersPage.cpp
     pages/SettingsPage.h
     pages/SettingsPage.cpp
 )
@@ -68,6 +72,7 @@ set(SORA_RESOURCES
     resources/icons/music.svg
     resources/icons/pdf.svg
     resources/icons/ai.svg
+    resources/icons/sticker.svg
     resources/icons/settings.svg
     resources/icons/prev.svg
     resources/icons/play.svg
