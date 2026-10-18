@@ -307,6 +307,41 @@ QMenu::separator {
     margin: 4px 8px;
 }
 
+/* ---------- 关闭确认弹窗 ---------- */
+QMessageBox {
+    background-color: #FFFFFF;
+    color: #12161C;
+}
+
+QMessageBox QLabel {
+    background: transparent;
+    color: #12161C;
+}
+
+QMessageBox QCheckBox {
+    background: transparent;
+    color: #6B7684;
+}
+
+QMessageBox QPushButton {
+    background-color: #F6F7F9;
+    color: #12161C;
+    border: 1px solid #DDE2E8;
+    border-radius: 6px;
+    padding: 6px 18px;
+    min-width: 72px;
+    min-height: 26px;
+}
+
+QMessageBox QPushButton:hover {
+    border-color: #0FDC78;
+    color: #0A9E56;
+}
+
+QMessageBox QPushButton:pressed {
+    background-color: #EDF0F3;
+}
+
 /* ---------- 卡片 ---------- */
 QFrame#Card {
     background-color: #FFFFFF;

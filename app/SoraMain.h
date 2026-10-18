@@ -8,6 +8,9 @@
 class AiClient;
 class AudioPlayer;
 class PlayerBar;
+class QAction;
+class QMenu;
+class QSystemTrayIcon;
 class QTimer;
 class SideBar;
 class TitleBar;
@@ -37,6 +40,14 @@ private:
     void setPage(int index);
     void toggleMaximize();
     void minimizeAnimated();
+
+    // 托盘：关闭窗口时可选择"最小化到托盘后台"，音乐不中断
+    enum class CloseChoice { Exit, Tray, Cancel };
+    CloseChoice askCloseAction(bool *remember);
+    void ensureTray();
+    void hideToTray();
+    void restoreFromTray();
+    void updateTrayTooltip();
 
     // 窗口动效统一由一个 QTimer 驱动，节拍取屏幕刷新率。
     // Qt 默认的动画节拍固定 16ms，在 144Hz 这类高刷屏上会和垂直同步错拍，
@@ -70,6 +81,12 @@ private:
     QRect m_normalGeometry;
     bool m_maximized = false;
     bool m_animatingMinimize = false;
+
+    QSystemTrayIcon *m_tray = nullptr;
+    QMenu *m_trayMenu = nullptr;
+    QAction *m_trayPlayAction = nullptr;
+    bool m_forceQuit = false;       // 托盘菜单里的"退出"：跳过询问，真正结束进程
+    bool m_trayNoticeShown = false; // 气泡提示每次运行只弹一次
 };
 
 #endif // SORA_SORAMAIN_H

@@ -11,6 +11,8 @@
 #include "widgets/SideBar.h"
 #include "widgets/TitleBar.h"
 
+#include <QAction>
+#include <QCheckBox>
 #include <QCloseEvent>
 #include <QEasingCurve>
 #include <QElapsedTimer>
@@ -19,10 +21,14 @@
 #include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QKeyEvent>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPushButton>
 #include <QScreen>
 #include <QSettings>
 #include <QSizeGrip>
 #include <QStackedWidget>
+#include <QSystemTrayIcon>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -44,9 +50,14 @@ SoraMain::SoraMain(QWidget *parent)
 
     buildUi();
     restoreWindowState();
+    ensureTray();
 }
 
-SoraMain::~SoraMain() = default;
+SoraMain::~SoraMain()
+{
+    // 先摘掉托盘图标再析构，避免退出瞬间图标残留在通知区
+    m_tray->hide();
+}
 
 void SoraMain::buildUi()
 {
@@ -149,7 +160,160 @@ void SoraMain::closeEvent(QCloseEvent *event)
                       m_maximized ? m_normalGeometry : geometry());
     settings.setValue(QStringLiteral("window/maximized"), m_maximized);
 
-    QMainWindow::closeEvent(event);
+    // 托盘菜单的"退出"：不再询问，真正结束进程
+    if (m_forceQuit) {
+        QMainWindow::closeEvent(event);
+        return;
+    }
+
+    // window/closeAction：ask（默认，每次询问）/ tray（最小化到托盘）/ exit（直接退出）
+    // 与设置页「通用 → 关闭窗口时」写同一个键，两边随时可互相覆盖
+    const QString action = settings.value(QStringLiteral("window/closeAction"),
+                                          QStringLiteral("ask")).toString();
+
+    if (action == QStringLiteral("exit")) {
+        QMainWindow::closeEvent(event);
+        return;
+    }
+
+    if (action == QStringLiteral("ask")) {
+        bool remember = false;
+        const CloseChoice choice = askCloseAction(&remember);
+        if (choice == CloseChoice::Cancel) {
+            event->ignore();   // 用户反悔，窗口留着
+            return;
+        }
+        if (remember) {
+            settings.setValue(QStringLiteral("window/closeAction"),
+                              choice == CloseChoice::Tray
+                                  ? QStringLiteral("tray") : QStringLiteral("exit"));
+        }
+        if (choice == CloseChoice::Exit) {
+            QMainWindow::closeEvent(event);
+            return;
+        }
+        // 本次选了"进托盘"但没勾记住：只对这一次生效，下次仍然询问
+    }
+
+    // 记忆值是 tray，或本次弹窗选了 tray，都走后台
+    hideToTray();
+    event->ignore();           // 不真正关闭，进程和音乐都留在后台
+}
+
+SoraMain::CloseChoice SoraMain::askCloseAction(bool *remember)
+{
+    QMessageBox box(QMessageBox::NoIcon, QStringLiteral("关闭 Sora"),
+                    QStringLiteral("要直接退出，还是最小化到托盘后台继续播放？"),
+                    QMessageBox::NoButton, this);
+    const QAbstractButton *trayBtn =
+        box.addButton(QStringLiteral("最小化到托盘"), QMessageBox::ActionRole);
+    const QAbstractButton *exitBtn =
+        box.addButton(QStringLiteral("直接退出"), QMessageBox::DestructiveRole);
+    box.addButton(QStringLiteral("取消"), QMessageBox::RejectRole);
+    auto *rememberBox = new QCheckBox(QStringLiteral("记住我的选择，不再询问"), &box);
+    box.setCheckBox(rememberBox);
+
+    box.exec();
+    *remember = rememberBox->isChecked();
+    const QAbstractButton *clicked = box.clickedButton();
+    if (clicked == trayBtn)
+        return CloseChoice::Tray;
+    if (clicked == exitBtn)
+        return CloseChoice::Exit;
+    return CloseChoice::Cancel;
+}
+
+void SoraMain::ensureTray()
+{
+    m_trayMenu = new QMenu(this);
+
+    QAction *showAct = m_trayMenu->addAction(QStringLiteral("显示主窗口"));
+    connect(showAct, &QAction::triggered, this, &SoraMain::restoreFromTray);
+
+    m_trayPlayAction = m_trayMenu->addAction(QStringLiteral("暂停"));
+    connect(m_trayPlayAction, &QAction::triggered, m_audio, &AudioPlayer::togglePlayPause);
+
+    QAction *prevAct = m_trayMenu->addAction(QStringLiteral("上一首"));
+    connect(prevAct, &QAction::triggered, m_audio, &AudioPlayer::previous);
+    QAction *nextAct = m_trayMenu->addAction(QStringLiteral("下一首"));
+    connect(nextAct, &QAction::triggered, m_audio, &AudioPlayer::next);
+
+    m_trayMenu->addSeparator();
+    QAction *quitAct = m_trayMenu->addAction(QStringLiteral("退出"));
+    connect(quitAct, &QAction::triggered, this, [this] {
+        m_forceQuit = true;
+        // 窗口藏在托盘时 close() 不触发退出：quitOnLastWindowClosed 只认
+        // "最后一个可见窗口"，隐藏窗口不算。所以隐藏状态下直接退；
+        // 可见时照常走 close()，让 closeEvent 存一次窗口几何。
+        if (isHidden())
+            QCoreApplication::quit();
+        else
+            close();
+    });
+
+    // 菜单文案随播放状态变化（暂停 ↔ 播放）
+    connect(m_audio, &AudioPlayer::playingChanged, this, [this](bool playing) {
+        m_trayPlayAction->setText(playing ? QStringLiteral("暂停")
+                                          : QStringLiteral("播放"));
+        updateTrayTooltip();
+    });
+    connect(m_audio, &AudioPlayer::trackChanged, this, [this](const QString &) {
+        updateTrayTooltip();
+    });
+
+    m_tray = new QSystemTrayIcon(QIcon(QStringLiteral(":/app.png")), this);
+    m_tray->setContextMenu(m_trayMenu);
+    m_tray->setToolTip(QStringLiteral("Sora"));
+    // 左键单击图标恢复窗口；右键走上下文菜单
+    connect(m_tray, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason) {
+        if (reason == QSystemTrayIcon::Trigger)
+            restoreFromTray();
+    });
+    m_tray->show();
+}
+
+void SoraMain::hideToTray()
+{
+    // 关闭时可能正处在最小化淡出动画中途，先停掉并把透明度复位，
+    // 否则下次恢复窗口是隐形的
+    m_anim = Anim::None;
+    m_animTimer->stop();
+    m_animatingMinimize = false;
+    setWindowOpacity(1.0);
+    hide();
+
+    // 每次运行只提示一次，避免次次弹气泡惹人烦
+    if (!m_trayNoticeShown) {
+        m_trayNoticeShown = true;
+        m_tray->showMessage(QStringLiteral("Sora 仍在运行"),
+                            QStringLiteral("已最小化到托盘，音乐不会停。单击图标恢复窗口。"),
+                            QSystemTrayIcon::Information, 2500);
+    }
+}
+
+void SoraMain::restoreFromTray()
+{
+    if (isMinimized())
+        QWidget::showNormal();
+    setWindowOpacity(1.0);
+    show();
+    raise();
+    activateWindow();
+}
+
+void SoraMain::updateTrayTooltip()
+{
+    if (!m_tray)
+        return;
+
+    const QString title = m_audio->currentTitle();
+    if (m_audio->isPlaying()) {
+        m_tray->setToolTip(title.isEmpty()
+                               ? QStringLiteral("Sora 正在播放")
+                               : QStringLiteral("Sora 正在播放：%1").arg(title));
+    } else {
+        m_tray->setToolTip(QStringLiteral("Sora"));
+    }
 }
 
 void SoraMain::keyPressEvent(QKeyEvent *event)

@@ -105,6 +105,32 @@ void SettingsPage::buildUi()
     contentLayout->setContentsMargins(28, 22, 28, 22);
     contentLayout->setSpacing(18);
 
+    // ---- 通用 ----
+    auto *general = new QFrame(content);
+    general->setObjectName(QStringLiteral("Card"));
+    auto *generalLayout = new QFormLayout(general);
+    generalLayout->setContentsMargins(20, 18, 20, 18);
+    generalLayout->setSpacing(12);
+    generalLayout->setLabelAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
+    auto *generalTitle = new QLabel(QStringLiteral("通用"), general);
+    generalTitle->setObjectName(QStringLiteral("CardTitle"));
+    generalLayout->addRow(generalTitle);
+
+    // 关闭窗口时的行为，写 window/closeAction，主窗口 closeEvent 读同一个键。
+    // 改动即时生效，不依赖底部"保存"按钮——这是行为开关，不是要反复调的参数。
+    m_closeAction = new QComboBox(general);
+    m_closeAction->addItem(QStringLiteral("每次询问"), QStringLiteral("ask"));
+    m_closeAction->addItem(QStringLiteral("最小化到托盘，音乐继续"), QStringLiteral("tray"));
+    m_closeAction->addItem(QStringLiteral("直接退出"), QStringLiteral("exit"));
+    connect(m_closeAction, &QComboBox::currentIndexChanged, this, [this](int index) {
+        QSettings().setValue(QStringLiteral("window/closeAction"),
+                             m_closeAction->itemData(index).toString());
+    });
+    generalLayout->addRow(makeFieldLabel(QStringLiteral("关闭窗口时"), general), m_closeAction);
+
+    contentLayout->addWidget(general);
+
     // ---- 外观 ----
     auto *appearance = new QFrame(content);
     appearance->setObjectName(QStringLiteral("Card"));
@@ -254,6 +280,16 @@ void SettingsPage::loadSettings()
         settings.value(QStringLiteral("systemPrompt"), config.systemPrompt).toString());
 
     settings.endGroup();
+
+    // 关闭窗口行为：与主窗口/关闭弹窗共用 window/closeAction。
+    // 用 blocker 抑制信号，避免"读旧值→回写"把用户刚在弹窗里做的选择抹掉
+    {
+        const QSignalBlocker blocker(m_closeAction);
+        const QString closeAction = settings.value(QStringLiteral("window/closeAction"),
+                                                   QStringLiteral("ask")).toString();
+        const int at = m_closeAction->findData(closeAction);
+        m_closeAction->setCurrentIndex(at < 0 ? 0 : at);
+    }
 
     m_theme->setCurrentIndex(ThemeManager::instance().isDark() ? 0 : 1);
 

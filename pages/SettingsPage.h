@@ -11,7 +11,7 @@ class QTextEdit;
 class QToolButton;
 
 /**
- * 设置页：主题切换 + AI 接入配置。
+ * 设置页：通用行为 + 主题切换 + AI 接入配置。
  *
  * 配置用 QSettings 持久化（注册表 / ini），API Key 只存在本机，
  * 不会写进任何代码或仓库文件。
@@ -33,6 +33,7 @@ private:
 
     AiClient *m_client = nullptr;
 
+    QComboBox *m_closeAction = nullptr;
     QComboBox *m_theme = nullptr;
     QComboBox *m_provider = nullptr;
     QLineEdit *m_baseUrl = nullptr;
