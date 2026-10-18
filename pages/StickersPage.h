@@ -12,7 +12,7 @@ class QToolButton;
 class StickerStore;
 
 /**
- * 表情库页：左侧操作列（监听开关 / 手动导入 / 使用提示），右侧表情网格。
+ * 表情库页：左侧操作列（监听开关 / 手动导入 / 存储位置 / 使用提示），右侧表情网格。
  *
  * 单击格子 = 写回剪贴板；右键 = 复制 / 打开 / 删除；图片文件可直接拖进来。
  */
@@ -38,6 +38,7 @@ private:
     void showGridMenu(const QPoint &pos);
     void setStatus(const QString &text);
     void syncListenButton();
+    void syncStoragePath();
     void updateCountLabel();
 
     StickerStore *m_store = nullptr;
@@ -48,6 +49,7 @@ private:
     QLabel *m_countLabel = nullptr;
     QListWidget *m_grid = nullptr;
     QLabel *m_status = nullptr;
+    QLabel *m_storagePath = nullptr;
 };
 
 #endif // SORA_STICKERSPAGE_H

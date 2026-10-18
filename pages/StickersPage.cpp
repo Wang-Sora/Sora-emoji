@@ -128,6 +128,34 @@ void StickersPage::buildUi()
     connect(importFiles, &QToolButton::clicked, this, &StickersPage::importFiles);
     colLayout->addWidget(importFiles);
 
+    // 存储位置：迁去别的盘/目录。迁移由 StickerStore 做（先复制后清理，失败不伤老库）
+    auto *storageBtn = new QToolButton(column);
+    storageBtn->setObjectName(QStringLiteral("Ghost"));
+    storageBtn->setText(QStringLiteral("更改存储位置…"));
+    storageBtn->setMinimumHeight(32);
+    storageBtn->setCursor(Qt::PointingHandCursor);
+    connect(storageBtn, &QToolButton::clicked, this, [this] {
+        const QString dir = QFileDialog::getExistingDirectory(
+            this, QStringLiteral("选择表情包存储位置"), m_store->storageRoot());
+        if (dir.isEmpty())
+            return;
+        const QString error = m_store->migrateStorage(dir);
+        if (!error.isEmpty()) {
+            setStatus(error);
+            return;
+        }
+        syncStoragePath();
+        setStatus(QStringLiteral("已迁移到 %1").arg(
+            QDir::toNativeSeparators(m_store->storageRoot())));
+    });
+    colLayout->addWidget(storageBtn);
+
+    m_storagePath = new QLabel(column);
+    m_storagePath->setObjectName(QStringLiteral("Hint"));
+    m_storagePath->setWordWrap(true);
+    syncStoragePath();
+    colLayout->addWidget(m_storagePath);
+
     colLayout->addStretch(1);
 
     auto *tips = new QLabel(column);
@@ -308,6 +336,15 @@ void StickersPage::syncListenButton()
     m_listenButton->setChecked(on);
     m_listenButton->setText(on ? QStringLiteral("监听剪贴板 · 开")
                                : QStringLiteral("监听剪贴板 · 关"));
+}
+
+void StickersPage::syncStoragePath()
+{
+    if (!m_storagePath)
+        return;
+    const QString path = QDir::toNativeSeparators(m_store->storageRoot());
+    m_storagePath->setText(QStringLiteral("当前：%1").arg(path));
+    m_storagePath->setToolTip(path);
 }
 
 void StickersPage::updateCountLabel()

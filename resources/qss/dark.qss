@@ -330,8 +330,10 @@ QMessageBox QPushButton {
     color: #E7EBF0;
     border: 1px solid #2A323E;
     border-radius: 6px;
-    padding: 6px 18px;
-    min-width: 72px;
+    /* QMessageBox 会把所有按钮等宽；min-width 要罩住最长的六字文案
+       （13px 雅黑 ≈ 78px）再留余量，否则最后一个字会被裁掉 */
+    padding: 6px 14px;
+    min-width: 96px;
     min-height: 26px;
 }
 

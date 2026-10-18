@@ -12,7 +12,7 @@ class QTimer;
 /**
  * 表情库存储：从剪贴板 / 文件采集图片，去重后落盘，并支持点击写回剪贴板。
  *
- * 目录布局（%APPDATA%/Sora/stickers/）：
+ * 目录布局（默认 %APPDATA%/Sora/stickers/，可用 stickers/storageDir 改到别处）：
  *   origin/    <sha256>.<ext>   原文件字节，绝不重编码 —— GIF 动画因此保真
  *   thumbs/    <sha256>.png     入库时预生成的 256px 缩略图，列表滚动不卡
  *   index.json                  元数据索引
@@ -66,6 +66,11 @@ public:
     QString thumbPath(const QString &hash) const;
     QString storageRoot() const;
 
+    /** 迁移整个库到新根目录（origin/thumbs/index.json 一起搬）。
+     *  先复制后清理：任何一步失败都中止且老库原封不动。
+     *  成功返回空串，失败返回错误描述。 */
+    QString migrateStorage(const QString &newRoot);
+
     /** 点击写回：静图同时给位图 + 文件引用（聊天框粘成图、资源管理器粘成文件）；
      *  GIF 只给文件引用 —— 位图会把动画退化成首帧。 */
     bool copyToClipboard(const QString &hash);
@@ -88,6 +93,7 @@ private:
     const StickerEntry *find(const QString &hash) const;
 
     QList<StickerEntry> m_entries;
+    QString m_root;       // 存储根目录，构造时从 stickers/storageDir 读，默认 AppData
     QString m_originDir;
     QString m_thumbDir;
 

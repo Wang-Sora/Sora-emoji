@@ -14,6 +14,7 @@
 #include <QJsonObject>
 #include <QMimeData>
 #include <QSaveFile>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QTimer>
 #include <QUrl>
@@ -57,9 +58,14 @@ QString hashToName(const QString &hash, const QString &ext)
 StickerStore::StickerStore(QObject *parent)
     : QObject(parent)
 {
-    const QString root = storageRoot();
-    m_originDir = root + QStringLiteral("/origin");
-    m_thumbDir = root + QStringLiteral("/thumbs");
+    // 存储位置：用户配置过就用配置的，否则落在 %APPDATA%/Sora/stickers
+    m_root = QSettings().value(QStringLiteral("stickers/storageDir")).toString();
+    if (m_root.isEmpty()) {
+        m_root = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                 + QStringLiteral("/stickers");
+    }
+    m_originDir = m_root + QStringLiteral("/origin");
+    m_thumbDir = m_root + QStringLiteral("/thumbs");
     QDir().mkpath(m_originDir);
     QDir().mkpath(m_thumbDir);
 
@@ -230,8 +236,56 @@ QString StickerStore::thumbPath(const QString &hash) const
 
 QString StickerStore::storageRoot() const
 {
-    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
-         + QStringLiteral("/stickers");
+    return m_root;
+}
+
+QString StickerStore::migrateStorage(const QString &newRoot)
+{
+    const QString target = QDir::fromNativeSeparators(QDir::cleanPath(newRoot));
+    if (target.isEmpty() || target == m_root)
+        return {};
+
+    // 先把目标目录建出来，建不出来就不动老数据
+    const QString newOrigin = target + QStringLiteral("/origin");
+    const QString newThumb = target + QStringLiteral("/thumbs");
+    if (!QDir().mkpath(newOrigin) || !QDir().mkpath(newThumb))
+        return QStringLiteral("无法创建目标目录，老数据未动");
+
+    // 第一遍：复制。哈希即内容，目标已有同名文件 = 同一张图，跳过即可。
+    // 用复制而不是改名：中途失败时老库还完好，重试也无害。
+    for (const StickerEntry &entry : std::as_const(m_entries)) {
+        const QString originSrc = m_originDir + QLatin1Char('/') + hashToName(entry.hash, entry.ext);
+        const QString originDst = newOrigin + QLatin1Char('/') + hashToName(entry.hash, entry.ext);
+        if (QFileInfo::exists(originSrc) && !QFileInfo::exists(originDst)
+            && !QFile::copy(originSrc, originDst)) {
+            return QStringLiteral("复制失败（老数据未动）：%1").arg(originSrc);
+        }
+
+        const QString thumbSrc = m_thumbDir + QLatin1Char('/') + entry.hash + QStringLiteral(".png");
+        const QString thumbDst = newThumb + QLatin1Char('/') + entry.hash + QStringLiteral(".png");
+        if (QFileInfo::exists(thumbSrc) && !QFileInfo::exists(thumbDst)
+            && !QFile::copy(thumbSrc, thumbDst)) {
+            return QStringLiteral("复制缩略图失败（老数据未动）：%1").arg(thumbSrc);
+        }
+    }
+
+    // 第二遍：全部复制成功，才清理源文件和旧索引
+    for (const StickerEntry &entry : std::as_const(m_entries)) {
+        QFile::remove(m_originDir + QLatin1Char('/') + hashToName(entry.hash, entry.ext));
+        QFile::remove(m_thumbDir + QLatin1Char('/') + entry.hash + QStringLiteral(".png"));
+    }
+    QFile::remove(m_root + QStringLiteral("/index.json"));
+    // 老根目录清得掉就清（非空说明还有用户自己的文件，留着别碰）
+    QDir().rmdir(m_originDir);
+    QDir().rmdir(m_thumbDir);
+    QDir().rmdir(m_root);
+
+    m_root = target;
+    m_originDir = newOrigin;
+    m_thumbDir = newThumb;
+    saveIndex();
+    QSettings().setValue(QStringLiteral("stickers/storageDir"), target);
+    return {};
 }
 
 bool StickerStore::copyToClipboard(const QString &hash)
